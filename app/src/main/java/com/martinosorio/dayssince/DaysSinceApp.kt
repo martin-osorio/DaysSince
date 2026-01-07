@@ -12,10 +12,11 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -42,15 +43,11 @@ fun DaysSinceApp(darkTheme: Boolean = true) {
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = "Days Since January 1st, 2026",
+                    text = "Days Since Picked Date/Time",
                     style = MaterialTheme.typography.headlineMedium
                 )
 
                 DaysSinceWidget(
-                    modifier = Modifier.padding(top = 24.dp)
-                )
-
-                NativePickers(
                     modifier = Modifier.padding(top = 24.dp)
                 )
             }
@@ -60,19 +57,6 @@ fun DaysSinceApp(darkTheme: Boolean = true) {
 
 @Composable
 private fun DaysSinceWidget(
-    modifier: Modifier = Modifier
-) {
-    val days = DaysSince.sinceJan1st2026()
-
-    Text(
-        modifier = modifier,
-        text = days.toString(),
-        style = MaterialTheme.typography.displayMedium
-    )
-}
-
-@Composable
-private fun NativePickers(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -94,6 +78,51 @@ private fun NativePickers(
             ?.let { selectedTime = it }
     }
 
+    val daysSincePicked by remember(selectedDate, selectedTime) {
+        derivedStateOf { DaysSince.sincePicked(selectedDate, selectedTime) }
+    }
+
+    Column(
+        modifier = modifier,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            text = daysSincePicked.toString(),
+            style = MaterialTheme.typography.displayMedium
+        )
+
+        Text(
+            modifier = Modifier.padding(top = 12.dp),
+            text = "From: $selectedDate at %02d:%02d".format(selectedTime.hour, selectedTime.minute),
+            style = MaterialTheme.typography.bodyLarge
+        )
+
+        NativePickers(
+            modifier = Modifier.padding(top = 24.dp),
+            selectedDate = selectedDate,
+            selectedTime = selectedTime,
+            onSelectedDateChange = {
+                selectedDate = it
+                prefs.edit().putString(PREF_SELECTED_DATE, it.toString()).apply()
+            },
+            onSelectedTimeChange = {
+                selectedTime = it
+                prefs.edit().putString(PREF_SELECTED_TIME, it.toString()).apply()
+            }
+        )
+    }
+}
+
+@Composable
+private fun NativePickers(
+    modifier: Modifier = Modifier,
+    selectedDate: LocalDate,
+    selectedTime: LocalTime,
+    onSelectedDateChange: (LocalDate) -> Unit,
+    onSelectedTimeChange: (LocalTime) -> Unit
+) {
+    val context = LocalContext.current
+
     Column(
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally
@@ -103,9 +132,7 @@ private fun NativePickers(
                 val dialog = DatePickerDialog(
                     context,
                     { _, year, monthZeroBased, dayOfMonth ->
-                        val newDate = LocalDate.of(year, monthZeroBased + 1, dayOfMonth)
-                        selectedDate = newDate
-                        prefs.edit().putString(PREF_SELECTED_DATE, newDate.toString()).apply()
+                        onSelectedDateChange(LocalDate.of(year, monthZeroBased + 1, dayOfMonth))
                     },
                     selectedDate.year,
                     selectedDate.monthValue - 1,
@@ -117,21 +144,13 @@ private fun NativePickers(
             Text("Pick date")
         }
 
-        Text(
-            modifier = Modifier.padding(top = 8.dp),
-            text = "Selected date: $selectedDate",
-            style = MaterialTheme.typography.bodyLarge
-        )
-
         Button(
             modifier = Modifier.padding(top = 16.dp),
             onClick = {
                 val dialog = TimePickerDialog(
                     context,
                     { _, hourOfDay, minute ->
-                        val newTime = LocalTime.of(hourOfDay, minute)
-                        selectedTime = newTime
-                        prefs.edit().putString(PREF_SELECTED_TIME, newTime.toString()).apply()
+                        onSelectedTimeChange(LocalTime.of(hourOfDay, minute))
                     },
                     selectedTime.hour,
                     selectedTime.minute,
@@ -142,11 +161,5 @@ private fun NativePickers(
         ) {
             Text("Pick time")
         }
-
-        Text(
-            modifier = Modifier.padding(top = 8.dp),
-            text = "Selected time: %02d:%02d".format(selectedTime.hour, selectedTime.minute),
-            style = MaterialTheme.typography.bodyLarge
-        )
     }
 }

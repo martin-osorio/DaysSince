@@ -7,11 +7,13 @@ import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
 import android.content.Context
 import android.content.Intent
-import android.icu.util.Calendar
 import android.os.SystemClock
 import android.widget.RemoteViews
 import com.martinosorio.dayssince.DaysSince
+import com.martinosorio.dayssince.Prefs
 import com.martinosorio.dayssince.R
+import java.time.LocalDate
+import java.time.LocalTime
 
 class DayOfMonthAppWidgetProvider : AppWidgetProvider() {
 
@@ -47,7 +49,17 @@ class DayOfMonthAppWidgetProvider : AppWidgetProvider() {
     }
 
     private fun buildRemoteViews(context: Context): RemoteViews {
-        val days = DaysSince.sinceJan1st2026()
+        val prefs = Prefs.get(context)
+
+        val pickedDate = prefs.getString(PREF_SELECTED_DATE, null)
+            ?.runCatching(LocalDate::parse)
+            ?.getOrNull() ?: LocalDate.now()
+
+        val pickedTime = prefs.getString(PREF_SELECTED_TIME, null)
+            ?.runCatching(LocalTime::parse)
+            ?.getOrNull() ?: LocalTime.MIDNIGHT
+
+        val days = DaysSince.sincePicked(pickedDate, pickedTime)
 
         return RemoteViews(context.packageName, R.layout.widget_day_of_month).apply {
             setTextViewText(R.id.widget_day_number, days.toString())
@@ -85,5 +97,8 @@ class DayOfMonthAppWidgetProvider : AppWidgetProvider() {
     companion object {
         private const val REQUEST_CODE = 10101
         private const val ACTION_UPDATE_WIDGETS = "com.martinosorio.dayssince.widget.ACTION_UPDATE_WIDGETS"
+
+        private const val PREF_SELECTED_DATE = "selected_date"
+        private const val PREF_SELECTED_TIME = "selected_time"
     }
 }
