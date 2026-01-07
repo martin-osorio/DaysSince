@@ -11,6 +11,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -22,6 +23,9 @@ import androidx.compose.ui.unit.dp
 import com.martinosorio.dayssince.ui.theme.DaysSinceTheme
 import java.time.LocalDate
 import java.time.LocalTime
+
+private const val PREF_SELECTED_DATE = "selected_date"
+private const val PREF_SELECTED_TIME = "selected_time"
 
 @Composable
 fun DaysSinceApp(darkTheme: Boolean = true) {
@@ -72,9 +76,23 @@ private fun NativePickers(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
+    val prefs = remember(context) { Prefs.get(context) }
 
     var selectedDate by remember { mutableStateOf(LocalDate.now()) }
     var selectedTime by remember { mutableStateOf(LocalTime.now().withSecond(0).withNano(0)) }
+
+    // Load persisted values once.
+    LaunchedEffect(prefs) {
+        prefs.getString(PREF_SELECTED_DATE, null)
+            ?.runCatching(LocalDate::parse)
+            ?.getOrNull()
+            ?.let { selectedDate = it }
+
+        prefs.getString(PREF_SELECTED_TIME, null)
+            ?.runCatching(LocalTime::parse)
+            ?.getOrNull()
+            ?.let { selectedTime = it }
+    }
 
     Column(
         modifier = modifier,
@@ -85,7 +103,9 @@ private fun NativePickers(
                 val dialog = DatePickerDialog(
                     context,
                     { _, year, monthZeroBased, dayOfMonth ->
-                        selectedDate = LocalDate.of(year, monthZeroBased + 1, dayOfMonth)
+                        val newDate = LocalDate.of(year, monthZeroBased + 1, dayOfMonth)
+                        selectedDate = newDate
+                        prefs.edit().putString(PREF_SELECTED_DATE, newDate.toString()).apply()
                     },
                     selectedDate.year,
                     selectedDate.monthValue - 1,
@@ -109,7 +129,9 @@ private fun NativePickers(
                 val dialog = TimePickerDialog(
                     context,
                     { _, hourOfDay, minute ->
-                        selectedTime = LocalTime.of(hourOfDay, minute)
+                        val newTime = LocalTime.of(hourOfDay, minute)
+                        selectedTime = newTime
+                        prefs.edit().putString(PREF_SELECTED_TIME, newTime.toString()).apply()
                     },
                     selectedTime.hour,
                     selectedTime.minute,
