@@ -12,7 +12,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.martinosorio.dayssince.ui.theme.DaysSinceTheme
-import java.time.LocalDate
 
 @Composable
 fun DaysSinceApp(darkTheme: Boolean = true) {
@@ -29,11 +28,11 @@ fun DaysSinceApp(darkTheme: Boolean = true) {
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = "Days Since",
+                    text = "Days Since January 1st, 2026",
                     style = MaterialTheme.typography.headlineMedium
                 )
 
-                DayOfMonthWidget(
+                DaysSinceWidget(
                     modifier = Modifier.padding(top = 24.dp)
                 )
             }
@@ -42,13 +41,14 @@ fun DaysSinceApp(darkTheme: Boolean = true) {
 }
 
 @Composable
-private fun DayOfMonthWidget(
-    modifier: Modifier = Modifier,
-    today: LocalDate = LocalDate.now()
+private fun DaysSinceWidget(
+    modifier: Modifier = Modifier
 ) {
+    val days = DaysSince.sinceJan1st2026()
+
     Text(
         modifier = modifier,
-        text = today.dayOfMonth.toString(),
-        style = MaterialTheme.typography.titleMedium
+        text = days.toString(),
+        style = MaterialTheme.typography.displayMedium
     )
 }

@@ -1,5 +1,6 @@
 package com.martinosorio.dayssince.widget
 
+import android.annotation.SuppressLint
 import android.app.AlarmManager
 import android.app.PendingIntent
 import android.appwidget.AppWidgetManager
@@ -7,8 +8,9 @@ import android.appwidget.AppWidgetProvider
 import android.content.Context
 import android.content.Intent
 import android.icu.util.Calendar
-import android.os.Build
+import android.os.SystemClock
 import android.widget.RemoteViews
+import com.martinosorio.dayssince.DaysSince
 import com.martinosorio.dayssince.R
 
 class DayOfMonthAppWidgetProvider : AppWidgetProvider() {
@@ -27,8 +29,8 @@ class DayOfMonthAppWidgetProvider : AppWidgetProvider() {
             )
         }
 
-        // Keep it fresh daily (and after reboot if the device/app chooses to).
-        scheduleNextMidnightUpdate(context)
+        // Keep it roughly fresh daily without requiring exact-alarm privileges.
+        scheduleDailyUpdate(context)
     }
 
     override fun onReceive(context: Context, intent: Intent) {
@@ -45,44 +47,37 @@ class DayOfMonthAppWidgetProvider : AppWidgetProvider() {
     }
 
     private fun buildRemoteViews(context: Context): RemoteViews {
-        val today = Calendar.getInstance()
-        val day = today.get(Calendar.DAY_OF_MONTH)
+        val days = DaysSince.sinceJan1st2026()
 
         return RemoteViews(context.packageName, R.layout.widget_day_of_month).apply {
-            setTextViewText(R.id.widget_day_number, day.toString())
+            setTextViewText(R.id.widget_day_number, days.toString())
         }
     }
 
-    private fun scheduleNextMidnightUpdate(context: Context) {
+    @SuppressLint("ScheduleExactAlarm")
+    private fun scheduleDailyUpdate(context: Context) {
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as? AlarmManager ?: return
 
         val intent = Intent(context, DayOfMonthAppWidgetProvider::class.java).apply {
             action = ACTION_UPDATE_WIDGETS
         }
 
-        val flags = PendingIntent.FLAG_UPDATE_CURRENT or
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) PendingIntent.FLAG_IMMUTABLE else 0
-
         val pendingIntent = PendingIntent.getBroadcast(
             context,
             REQUEST_CODE,
             intent,
-            flags
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        val now = Calendar.getInstance()
-        val next = Calendar.getInstance().apply {
-            timeInMillis = now.timeInMillis
-            set(Calendar.HOUR_OF_DAY, 0)
-            set(Calendar.MINUTE, 0)
-            set(Calendar.SECOND, 5)
-            set(Calendar.MILLISECOND, 0)
-            add(Calendar.DAY_OF_MONTH, 1)
-        }
+        // Use elapsed realtime to avoid time-zone / wall-clock edge cases and to keep this clearly
+        // in the "inexact repeating" bucket (no exact-alarm privileges needed).
+        val firstTriggerElapsed = SystemClock.elapsedRealtime() + 60_000L
 
-        alarmManager.setExactAndAllowWhileIdle(
-            AlarmManager.RTC,
-            next.timeInMillis,
+        alarmManager.cancel(pendingIntent)
+        alarmManager.setInexactRepeating(
+            AlarmManager.ELAPSED_REALTIME_WAKEUP,
+            firstTriggerElapsed,
+            AlarmManager.INTERVAL_DAY,
             pendingIntent
         )
     }
@@ -92,4 +87,3 @@ class DayOfMonthAppWidgetProvider : AppWidgetProvider() {
         private const val ACTION_UPDATE_WIDGETS = "com.martinosorio.dayssince.widget.ACTION_UPDATE_WIDGETS"
     }
 }
-
