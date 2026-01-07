@@ -1,17 +1,27 @@
 package com.martinosorio.dayssince
 
+import android.app.DatePickerDialog
+import android.app.TimePickerDialog
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.martinosorio.dayssince.ui.theme.DaysSinceTheme
+import java.time.LocalDate
+import java.time.LocalTime
 
 @Composable
 fun DaysSinceApp(darkTheme: Boolean = true) {
@@ -35,6 +45,10 @@ fun DaysSinceApp(darkTheme: Boolean = true) {
                 DaysSinceWidget(
                     modifier = Modifier.padding(top = 24.dp)
                 )
+
+                NativePickers(
+                    modifier = Modifier.padding(top = 24.dp)
+                )
             }
         }
     }
@@ -51,4 +65,66 @@ private fun DaysSinceWidget(
         text = days.toString(),
         style = MaterialTheme.typography.displayMedium
     )
+}
+
+@Composable
+private fun NativePickers(
+    modifier: Modifier = Modifier
+) {
+    val context = LocalContext.current
+
+    var selectedDate by remember { mutableStateOf(LocalDate.now()) }
+    var selectedTime by remember { mutableStateOf(LocalTime.now().withSecond(0).withNano(0)) }
+
+    Column(
+        modifier = modifier,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Button(
+            onClick = {
+                val dialog = DatePickerDialog(
+                    context,
+                    { _, year, monthZeroBased, dayOfMonth ->
+                        selectedDate = LocalDate.of(year, monthZeroBased + 1, dayOfMonth)
+                    },
+                    selectedDate.year,
+                    selectedDate.monthValue - 1,
+                    selectedDate.dayOfMonth
+                )
+                dialog.show()
+            }
+        ) {
+            Text("Pick date")
+        }
+
+        Text(
+            modifier = Modifier.padding(top = 8.dp),
+            text = "Selected date: $selectedDate",
+            style = MaterialTheme.typography.bodyLarge
+        )
+
+        Button(
+            modifier = Modifier.padding(top = 16.dp),
+            onClick = {
+                val dialog = TimePickerDialog(
+                    context,
+                    { _, hourOfDay, minute ->
+                        selectedTime = LocalTime.of(hourOfDay, minute)
+                    },
+                    selectedTime.hour,
+                    selectedTime.minute,
+                    true
+                )
+                dialog.show()
+            }
+        ) {
+            Text("Pick time")
+        }
+
+        Text(
+            modifier = Modifier.padding(top = 8.dp),
+            text = "Selected time: %02d:%02d".format(selectedTime.hour, selectedTime.minute),
+            style = MaterialTheme.typography.bodyLarge
+        )
+    }
 }
