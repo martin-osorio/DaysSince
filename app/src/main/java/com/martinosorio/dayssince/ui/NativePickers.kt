@@ -2,8 +2,9 @@ package com.martinosorio.dayssince.ui
 
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.Row
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -28,40 +29,43 @@ fun NativePickers(
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Button(
-            onClick = {
-                val dialog = DatePickerDialog(
-                    context,
-                    { _, year, monthZeroBased, dayOfMonth ->
-                        onSelectedDateChange(LocalDate.of(year, monthZeroBased + 1, dayOfMonth))
-                    },
-                    selectedDate.year,
-                    selectedDate.monthValue - 1,
-                    selectedDate.dayOfMonth
-                )
-                dialog.show()
-            }
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Text("Pick date")
-        }
+            Button(
+                onClick = {
+                    val dialog = DatePickerDialog(
+                        context,
+                        { _, year, monthZeroBased, dayOfMonth ->
+                            onSelectedDateChange(LocalDate.of(year, monthZeroBased + 1, dayOfMonth))
+                        },
+                        selectedDate.year,
+                        selectedDate.monthValue - 1,
+                        selectedDate.dayOfMonth
+                    )
+                    dialog.show()
+                }
+            ) {
+                Text("Pick Date")
+            }
 
-        Button(
-            modifier = Modifier.padding(top = 16.dp),
-            onClick = {
-                val dialog = TimePickerDialog(
-                    context,
-                    { _, hourOfDay, minute ->
-                        onSelectedTimeChange(LocalTime.of(hourOfDay, minute))
-                    },
-                    selectedTime.hour,
-                    selectedTime.minute,
-                    true
-                )
-                dialog.show()
+            Button(
+                onClick = {
+                    val dialog = TimePickerDialog(
+                        context,
+                        { _, hourOfDay, minute ->
+                            onSelectedTimeChange(LocalTime.of(hourOfDay, minute))
+                        },
+                        selectedTime.hour,
+                        selectedTime.minute,
+                        true
+                    )
+                    dialog.show()
+                }
+            ) {
+                Text("Pick Time")
             }
-        ) {
-            Text("Pick time")
         }
     }
 }
-
