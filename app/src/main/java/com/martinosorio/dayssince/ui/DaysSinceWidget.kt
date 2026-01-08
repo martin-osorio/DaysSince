@@ -66,17 +66,17 @@ fun DaysSinceWidget(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
-            text = daysSincePicked.toString(),
-            style = MaterialTheme.typography.displayMedium
-        )
-
-        Text(
             modifier = Modifier.padding(top = 12.dp),
-            text = "From: $selectedDate at %02d:%02d".format(
+            text = "$selectedDate at %02d:%02d".format(
                 selectedTime.hour,
                 selectedTime.minute
             ),
             style = MaterialTheme.typography.bodyLarge
+        )
+
+        Text(
+            text = daysSincePicked.toString(),
+            style = MaterialTheme.typography.displayMedium
         )
 
         NativePickers(

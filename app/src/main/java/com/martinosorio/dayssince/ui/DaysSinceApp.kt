@@ -28,7 +28,7 @@ fun DaysSinceApp(darkTheme: Boolean = true) {
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = "Days Since Picked Date/Time",
+                    text = "Days Since",
                     style = MaterialTheme.typography.headlineMedium
                 )
 
