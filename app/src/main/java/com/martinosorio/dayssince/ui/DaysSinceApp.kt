@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import com.martinosorio.dayssince.DaysSince
 import com.martinosorio.dayssince.Prefs
 import com.martinosorio.dayssince.ui.theme.DaysSinceTheme
+import com.martinosorio.dayssince.util.EnglishDateFormat
 import com.martinosorio.dayssince.widget.DayOfMonthAppWidgetProvider
 import kotlinx.coroutines.delay
 import java.time.LocalDate
@@ -76,23 +77,33 @@ fun DaysSinceApp(darkTheme: Boolean = true) {
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
+                    text = daysSincePicked.toString(),
+                    style = MaterialTheme.typography.displayMedium
+                )
+
+                Text(
+                    modifier = Modifier.padding(top = 16.dp),
                     text = "Days Since",
                     style = MaterialTheme.typography.headlineMedium
                 )
 
                 Text(
-                    modifier = Modifier.padding(top = 12.dp),
-                    text = "$selectedDate at %02d:%02d".format(
-                        selectedTime.hour,
-                        selectedTime.minute
-                    ),
+                    modifier = Modifier.padding(top = 20.dp),
+                    text = EnglishDateFormat.formatOrdinalDate(selectedDate),
                     style = MaterialTheme.typography.bodyLarge
                 )
 
                 Text(
-                    modifier = Modifier.padding(top = 24.dp),
-                    text = daysSincePicked.toString(),
-                    style = MaterialTheme.typography.displayMedium
+                    modifier = Modifier.padding(top = 4.dp),
+                    text = "at",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+
+                Text(
+                    modifier = Modifier.padding(top = 4.dp),
+                    text = "%02d:%02d".format(selectedTime.hour, selectedTime.minute),
+                    style = MaterialTheme.typography.bodyLarge
                 )
 
                 NativePickers(
