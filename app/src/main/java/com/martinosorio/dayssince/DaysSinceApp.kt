@@ -22,6 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.martinosorio.dayssince.ui.theme.DaysSinceTheme
+import com.martinosorio.dayssince.widget.DayOfMonthAppWidgetProvider
 import java.time.LocalDate
 import java.time.LocalTime
 
@@ -104,10 +105,12 @@ private fun DaysSinceWidget(
             onSelectedDateChange = {
                 selectedDate = it
                 prefs.edit().putString(PREF_SELECTED_DATE, it.toString()).apply()
+                DayOfMonthAppWidgetProvider.requestUpdate(context)
             },
             onSelectedTimeChange = {
                 selectedTime = it
                 prefs.edit().putString(PREF_SELECTED_TIME, it.toString()).apply()
+                DayOfMonthAppWidgetProvider.requestUpdate(context)
             }
         )
     }

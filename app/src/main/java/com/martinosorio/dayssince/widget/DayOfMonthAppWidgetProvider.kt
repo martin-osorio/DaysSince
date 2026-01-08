@@ -96,9 +96,18 @@ class DayOfMonthAppWidgetProvider : AppWidgetProvider() {
 
     companion object {
         private const val REQUEST_CODE = 10101
-        private const val ACTION_UPDATE_WIDGETS = "com.martinosorio.dayssince.widget.ACTION_UPDATE_WIDGETS"
+
+        // Public so the app UI can broadcast an update when the user changes date/time.
+        const val ACTION_UPDATE_WIDGETS = "com.martinosorio.dayssince.widget.ACTION_UPDATE_WIDGETS"
 
         private const val PREF_SELECTED_DATE = "selected_date"
         private const val PREF_SELECTED_TIME = "selected_time"
+
+        fun requestUpdate(context: Context) {
+            val intent = Intent(context, DayOfMonthAppWidgetProvider::class.java).apply {
+                action = ACTION_UPDATE_WIDGETS
+            }
+            context.sendBroadcast(intent)
+        }
     }
 }
