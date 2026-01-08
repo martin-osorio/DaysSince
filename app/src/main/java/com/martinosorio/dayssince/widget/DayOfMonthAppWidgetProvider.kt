@@ -31,8 +31,8 @@ class DayOfMonthAppWidgetProvider : AppWidgetProvider() {
             )
         }
 
-        // Keep it roughly fresh daily without requiring exact-alarm privileges.
-        scheduleDailyUpdate(context)
+        // Recompute periodically so the value stays current relative to "now".
+        scheduleHourlyUpdate(context)
     }
 
     override fun onReceive(context: Context, intent: Intent) {
@@ -67,7 +67,7 @@ class DayOfMonthAppWidgetProvider : AppWidgetProvider() {
     }
 
     @SuppressLint("ScheduleExactAlarm")
-    private fun scheduleDailyUpdate(context: Context) {
+    private fun scheduleHourlyUpdate(context: Context) {
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as? AlarmManager ?: return
 
         val intent = Intent(context, DayOfMonthAppWidgetProvider::class.java).apply {
@@ -81,15 +81,14 @@ class DayOfMonthAppWidgetProvider : AppWidgetProvider() {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        // Use elapsed realtime to avoid time-zone / wall-clock edge cases and to keep this clearly
-        // in the "inexact repeating" bucket (no exact-alarm privileges needed).
+        // Use elapsed realtime for robustness across time changes.
         val firstTriggerElapsed = SystemClock.elapsedRealtime() + 60_000L
 
         alarmManager.cancel(pendingIntent)
         alarmManager.setInexactRepeating(
             AlarmManager.ELAPSED_REALTIME_WAKEUP,
             firstTriggerElapsed,
-            AlarmManager.INTERVAL_DAY,
+            AlarmManager.INTERVAL_HOUR,
             pendingIntent
         )
     }
