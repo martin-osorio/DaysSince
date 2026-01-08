@@ -75,6 +75,7 @@ fun DaysSinceWidget(
         )
 
         Text(
+            modifier = Modifier.padding(top = 24.dp),
             text = daysSincePicked.toString(),
             style = MaterialTheme.typography.displayMedium
         )
