@@ -8,14 +8,6 @@ import java.time.ZoneId
 import java.time.temporal.ChronoUnit
 
 object DaysSince {
-    // Contract: returns >= 0, where Jan 1, 2026 => 0.
-    // For dates before Jan 1, 2026, we clamp to 0.
-    fun sinceJan1st2026(clock: Clock = Clock.systemDefaultZone()): Long {
-        val start = LocalDate.of(2026, 1, 1)
-        val today = LocalDate.now(clock)
-        val days = ChronoUnit.DAYS.between(start, today)
-        return if (days < 0) 0 else days
-    }
 
     /**
      * Whole days since the user-picked date & time in the device time zone.
