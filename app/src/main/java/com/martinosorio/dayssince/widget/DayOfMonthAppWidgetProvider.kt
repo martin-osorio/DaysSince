@@ -38,12 +38,18 @@ class DayOfMonthAppWidgetProvider : AppWidgetProvider() {
     override fun onReceive(context: Context, intent: Intent) {
         super.onReceive(context, intent)
 
-        if (ACTION_UPDATE_WIDGETS == intent.action) {
-            val manager = AppWidgetManager.getInstance(context)
-            val component = android.content.ComponentName(context, DayOfMonthAppWidgetProvider::class.java)
-            val ids = manager.getAppWidgetIds(component)
-            if (ids.isNotEmpty()) {
-                onUpdate(context, manager, ids)
+        when (intent.action) {
+            ACTION_UPDATE_WIDGETS,
+            Intent.ACTION_TIME_CHANGED,
+            Intent.ACTION_TIMEZONE_CHANGED,
+            Intent.ACTION_TIME_TICK -> {
+                val manager = AppWidgetManager.getInstance(context)
+                val component =
+                    android.content.ComponentName(context, DayOfMonthAppWidgetProvider::class.java)
+                val ids = manager.getAppWidgetIds(component)
+                if (ids.isNotEmpty()) {
+                    onUpdate(context, manager, ids)
+                }
             }
         }
     }

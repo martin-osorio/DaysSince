@@ -23,6 +23,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.martinosorio.dayssince.ui.theme.DaysSinceTheme
 import com.martinosorio.dayssince.widget.DayOfMonthAppWidgetProvider
+import kotlinx.coroutines.delay
 import java.time.LocalDate
 import java.time.LocalTime
 
@@ -66,6 +67,15 @@ private fun DaysSinceWidget(
     var selectedDate by remember { mutableStateOf(LocalDate.now()) }
     var selectedTime by remember { mutableStateOf(LocalTime.now().withSecond(0).withNano(0)) }
 
+    // Tick while this composable is on screen so we react to system time changes.
+    var nowTick by remember { mutableStateOf(0L) }
+    LaunchedEffect(Unit) {
+        while (true) {
+            nowTick = System.currentTimeMillis()
+            delay(60_000L)
+        }
+    }
+
     // Load persisted values once.
     LaunchedEffect(prefs) {
         prefs.getString(PREF_SELECTED_DATE, null)
@@ -79,7 +89,7 @@ private fun DaysSinceWidget(
             ?.let { selectedTime = it }
     }
 
-    val daysSincePicked by remember(selectedDate, selectedTime) {
+    val daysSincePicked by remember(selectedDate, selectedTime, nowTick) {
         derivedStateOf { DaysSince.sincePicked(selectedDate, selectedTime) }
     }
 
