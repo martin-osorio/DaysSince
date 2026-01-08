@@ -42,6 +42,12 @@ android {
         // Kotlin 1.9.0 compatible Compose compiler extension
         kotlinCompilerExtensionVersion = "1.5.1"
     }
+
+    testOptions {
+        unitTests {
+            isIncludeAndroidResources = true
+        }
+    }
 }
 
 dependencies {
