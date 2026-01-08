@@ -10,6 +10,7 @@ import android.content.Intent
 import android.os.SystemClock
 import android.widget.RemoteViews
 import com.martinosorio.dayssince.DaysSince
+import com.martinosorio.dayssince.MainActivity
 import com.martinosorio.dayssince.Prefs
 import com.martinosorio.dayssince.R
 import java.time.LocalDate
@@ -67,8 +68,20 @@ class DayOfMonthAppWidgetProvider : AppWidgetProvider() {
 
         val days = DaysSince.sincePicked(pickedDate, pickedTime)
 
+        val launchIntent = Intent(context, MainActivity::class.java).apply {
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
+        }
+
+        val launchPendingIntent = PendingIntent.getActivity(
+            context,
+            REQUEST_CODE_LAUNCH,
+            launchIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
         return RemoteViews(context.packageName, R.layout.widget_day_of_month).apply {
             setTextViewText(R.id.widget_day_number, days.toString())
+            setOnClickPendingIntent(R.id.widget_root, launchPendingIntent)
         }
     }
 
@@ -101,6 +114,7 @@ class DayOfMonthAppWidgetProvider : AppWidgetProvider() {
 
     companion object {
         private const val REQUEST_CODE = 10101
+        private const val REQUEST_CODE_LAUNCH = 10102
 
         // Public so the app UI can broadcast an update when the user changes date/time.
         const val ACTION_UPDATE_WIDGETS = "com.martinosorio.dayssince.widget.ACTION_UPDATE_WIDGETS"
