@@ -10,7 +10,7 @@ android {
     defaultConfig {
         applicationId = "com.martinosorio.dayssince"
         minSdk = 26
-        targetSdk = 34
+        targetSdk = 35
         versionCode = 1
         versionName = "1.0"
 
@@ -39,8 +39,8 @@ android {
     }
 
     composeOptions {
-        // Kotlin 1.9.0 compatible Compose compiler extension
-        kotlinCompilerExtensionVersion = "1.5.1"
+        // Bumped to a Kotlin 1.9.x compatible Compose compiler version
+        kotlinCompilerExtensionVersion = "1.5.15"
     }
 
     testOptions {
